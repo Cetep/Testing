@@ -5,17 +5,21 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import tester.Test;
+import tester.TestSpec;
 import tester.Tester;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Petec on 19.11.2016.
  */
 public class CustomXMLParser {
     private Gui gui;
+    TestSpec testSpec;
 
     public CustomXMLParser(Gui gui) {
         this.gui = gui;
@@ -30,18 +34,22 @@ public class CustomXMLParser {
             root.normalize();
             NodeList rootList = root.getElementsByTagName("*");
             for (int i = 0; i < rootList.getLength(); i++){
+                Element element = (Element) rootList.item(i);
                 switch (rootList.item(i).getNodeName()){
                     case "libs":
-                        processLibs((Element) rootList.item(i));
+                        processLibs(element);
                         break;
                     case "solution":
-                        processSolution((Element) rootList.item(i));
+                        processSolution(element);
                         break;
                     case "output":
-                        processOutput((Element) rootList.item(i));
+                        processOutput(element);
                         break;
                     case "du":
-                        processDu((Element) rootList.item(i));
+                        processDu(element);
+                        break;
+                    case "testfiles":
+                        processTestFiles(element);
                         break;
                     default:
                         System.out.println("Ignoring element: " + rootList.item(i).getNodeName());
@@ -54,22 +62,62 @@ public class CustomXMLParser {
         }
     }
 
-    private void processValidateClass(Element element, String className) {
-        String nameCond = element.getAttribute("nameCondition");
-        if(!nameCond.isEmpty()){
-            String nodeName = element.getNodeName();
-            Tester.getInstance().getTests().add(new Test(className, nodeName, "nameCondition", nameCond));
+    private void processVariables(Element element, String className) {
+        String testElement = element.getNodeName();
+        List<TestSpec> specList = new ArrayList<>();
+
+        testSpec = createTestSpec(element, "count");
+        if(testSpec != null){
+            specList.add(testSpec);
         }
+
+        testSpec = createTestSpec(element, "type");
+        if(testSpec != null){
+            specList.add(testSpec);
+        }
+
+        Test test = new Test(className, testElement, specList);
+        Tester.getInstance().getTests().add(test);
+    }
+
+    private TestSpec createTestSpec(Element element, String testSpecification){
+        String testValue = element.getAttribute(testSpecification);
+        if(!testValue.isEmpty()){
+            return new TestSpec(testSpecification, testValue);
+        }
+        return null;
+    }
+
+    private void processTestFiles(Element element) {
+        String path = element.getAttribute("path");
+        gui.setTestFiles(path);
+    }
+
+    private void processClass(Element element, String className) {
+        String testElement = element.getNodeName();
+        List<TestSpec> specList = new ArrayList<>();
+
+        testSpec = createTestSpec(element, "nameCondition");
+        if(testSpec != null){
+            specList.add(testSpec);
+        }
+
+        Test test = new Test(className, testElement, specList);
+        Tester.getInstance().getTests().add(test);
     }
 
     private void processDu(Element element) {
-        String duFile = "";
-        duFile = element.getAttribute("file");
+        String duFile = element.getAttribute("file");
         if(!duFile.isEmpty()){
             NodeList childList = element.getElementsByTagName("class");
             for (int i = 0; i < childList.getLength(); i++){
                 Element childEl = (Element) childList.item(i);
-                processValidateClass(childEl, duFile);
+                processClass(childEl, duFile);
+            }
+            childList = element.getElementsByTagName("variables");
+            for (int i = 0; i < childList.getLength(); i++){
+                Element childEl = (Element) childList.item(i);
+                processVariables(childEl, duFile);
             }
         }else{
             System.out.println("Error in XML file.");

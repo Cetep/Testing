@@ -1,23 +1,28 @@
 package tester;
 
+import java.util.List;
+
 /**
  * Created by Petec on 22.11.2016.
  */
 public class Test {
     private String className;
     private String testElement;
-    private String testSpecification;
-    private String testValue;
+    private List<TestSpec> testSpec;
 
-    public Test(String className, String testElement, String testSpecification, String testValue) {
+    public Test(String className, String testElement, List<TestSpec> testSpec) {
         this.className = className;
         this.testElement = testElement;
-        this.testSpecification = testSpecification;
-        this.testValue = testValue;
+        this.testSpec = testSpec;
         System.out.println("cn: " + className);
         System.out.println("te: " + testElement);
-        System.out.println("ts: " + testSpecification);
-        System.out.println("tv: " + testValue);
+        int i = 0;
+        testSpec.forEach(s -> {
+            System.out.println("ts: " + s.getTestSpecification());
+            System.out.println("tv: " + s.getTestValue());
+
+        });
+
     }
 
     public String getClassName() {
@@ -36,19 +41,11 @@ public class Test {
         this.testElement = testElement;
     }
 
-    public String getTestSpecification() {
-        return testSpecification;
+    public List<TestSpec> getTestSpec() {
+        return testSpec;
     }
 
-    public void setTestSpecification(String testSpecification) {
-        this.testSpecification = testSpecification;
-    }
-
-    public String getTestValue() {
-        return testValue;
-    }
-
-    public void setTestValue(String testValue) {
-        this.testValue = testValue;
+    public void setTestSpec(List<TestSpec> testSpec) {
+        this.testSpec = testSpec;
     }
 }
