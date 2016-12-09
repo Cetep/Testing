@@ -12,6 +12,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -20,9 +21,15 @@ import java.util.List;
 public class CustomXMLParser {
     private Gui gui;
     TestSpec testSpec;
+    private List<String> classTests;
+    private List<String> variableTests;
+    private List<String> duNodes;
 
     public CustomXMLParser(Gui gui) {
         this.gui = gui;
+        duNodes = Arrays.asList("class","variables");
+        classTests = Arrays.asList("nameCondition");
+        variableTests = Arrays.asList("count", "type", "height", "width");
     }
 
     public void parseXML(File inputFile){
@@ -66,15 +73,12 @@ public class CustomXMLParser {
         String testElement = element.getNodeName();
         List<TestSpec> specList = new ArrayList<>();
 
-        testSpec = createTestSpec(element, "count");
-        if(testSpec != null){
-            specList.add(testSpec);
-        }
-
-        testSpec = createTestSpec(element, "type");
-        if(testSpec != null){
-            specList.add(testSpec);
-        }
+        variableTests.forEach(test -> {
+            testSpec = createTestSpec(element, test);
+            if(testSpec != null){
+                specList.add(testSpec);
+            }
+        });
 
         Test test = new Test(className, testElement, specList);
         Tester.getInstance().getTests().add(test);
@@ -97,10 +101,13 @@ public class CustomXMLParser {
         String testElement = element.getNodeName();
         List<TestSpec> specList = new ArrayList<>();
 
-        testSpec = createTestSpec(element, "nameCondition");
-        if(testSpec != null){
-            specList.add(testSpec);
-        }
+        classTests.forEach(test -> {
+            testSpec = createTestSpec(element, test);
+            if(testSpec != null){
+                specList.add(testSpec);
+            }
+        });
+
 
         Test test = new Test(className, testElement, specList);
         Tester.getInstance().getTests().add(test);
@@ -109,16 +116,22 @@ public class CustomXMLParser {
     private void processDu(Element element) {
         String duFile = element.getAttribute("file");
         if(!duFile.isEmpty()){
-            NodeList childList = element.getElementsByTagName("class");
-            for (int i = 0; i < childList.getLength(); i++){
-                Element childEl = (Element) childList.item(i);
-                processClass(childEl, duFile);
-            }
-            childList = element.getElementsByTagName("variables");
-            for (int i = 0; i < childList.getLength(); i++){
-                Element childEl = (Element) childList.item(i);
-                processVariables(childEl, duFile);
-            }
+            duNodes.forEach(node -> {
+                NodeList childList = element.getElementsByTagName(node);
+                for (int i = 0; i < childList.getLength(); i++){
+                    Element childEl = (Element) childList.item(i);
+                    switch (node){
+                        case "class":
+                            processClass(childEl, duFile);
+                            break;
+                        case "variables":
+                            processVariables(childEl, duFile);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            });
         }else{
             System.out.println("Error in XML file.");
         }

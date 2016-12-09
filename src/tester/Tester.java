@@ -49,18 +49,17 @@ public class Tester {
             if(testSpec.getTestSpecification().equals("type")){
                 testFiles.forEach(file ->{
                     int result = runVariableTypeTest(file, testSpec.getTestValue());
+                    if(result > 0){
+                        System.out.println("Variable type test: pass");
+                    }else{
+                        System.out.println("Variable type test: fail");
+                    }
                     int count = isCountRequired(test);
                     if(count > 0){
                         if(result > count){
-                            System.out.println("Variable type test: pass");
-                        }else{
-                            System.out.println("Variable type test: fail");
-                        }
-                    }else{
-                        if(result > 0){
-                            System.out.println("Variable type test: pass");
-                        }else{
-                            System.out.println("Variable type test: fail");
+                            System.out.println("Variable count test: pass");
+                        }else if(result > 0){
+                            System.out.println("Variable count test: fail");
                         }
                     }
                 });

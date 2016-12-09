@@ -160,7 +160,11 @@ public class Gui extends Application {
         if(!path.endsWith("\\")){
             path = path + "\\";
         }
-        new File(path + "temp").mkdirs();
+        if(new File(path + "temp").mkdirs()){
+            System.out.println("Temp DIR created.");
+        }else{
+            System.out.println("Temp DIR creation failed.");
+        }
     }
 
     private String getTempPath() {
